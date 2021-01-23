@@ -31,31 +31,65 @@ def show_images(images,titles=None,save_im=True,filename=None):
     return fig, ax
 
 def color_index(image,index):
+    #red
+    if index==0:
+        image = 2 * image[:,:,0] - image[:,:,1] - image[:,:,2]
+    #green
+    if index==1:
+        image = 2 * image[:,:,1] - image[:,:,0] - image[:,:,2]
+    #blue
+    if index==2:
+        image = 2 * image[:,:,2] - image[:,:,0] - image[:,:,1]
+    
     return image
 
 def get_channels(image):
-    return [image, image, image]
+    
+    imageR = image[:,:,0]
+    imageG = image[:,:,1]
+    imageB = image[:,:,2]
+    
+    return [imageR, imageG, imageB]
 
 def subsample(image,r,c):
-    return image
+    #print('image', image.shape)
+    #print('image new ', image[::r,::c].shape)
+    return image[::r,::c]
 
 def gray_level(image):
+    image = (.299*image[:,:,0]) + (.587*image[:,:,1]) + (.114*image[:,:,2])
+    #print('gray level depth - ', image.shape) #results are 2D array
     return image
 
 def negative_gray_level(image):
+    image = -1 * gray_level(image)
     return image
 
-def vert_edges(gray_image):
+#changes in intensity horizontally : take 1st col and sub 2nd col, 2nd col sub 3rd col, 3rd col and sub 4th col and so on.
+def vert_edges(image):
+    
+    gray_image = gray_level(image)
+    
+    #since this is only messing with horizontal values (values to L and R of eachother) then we only look at columns
+    image = gray_image - np.hstack( (gray_image[:,1:], np.zeros((gray_image.shape[0],1)))) #add the extra col of 0s with Horizontal stack
+    
     return image
 
-def hor_edges(gray_image):
+#changes in intensity vertically : take 1st row and sub 2nd row, 2nd row and sub 3rd row, 3rd row and sub 4th and so on.
+def hor_edges(image):
+    
+   gray_image = gray_level(image)
+   #since this is only messing with the vertical values then (up and down) then we only mess with rows
+   image = gray_image - np.vstack( (gray_image[1:], np.zeros((1,gray_image.shape[1])))) #add the extra row of 0s with Vertical stack
+
    return image
 
 def mirror(image):
-    return image
+    #since its mirroring we ownly mess with the columns being flipped
+    return image[:,::-1,:]
 
 def upside_down(image):
-    return image
+    return image[::-1]
 
 def brightest_region(image,reg_rows,reg_cols):
     brightest_col = np.random.randint(0,image.shape[0]-reg_rows)
@@ -80,6 +114,8 @@ if __name__ == "__main__":
             print('Converted image to float')
 
         show_image(image,'Original image')
+        
+        print(image.shape)
 
         show_image(subsample(image,2,2),'Subsampled image')
 
@@ -96,9 +132,9 @@ if __name__ == "__main__":
 
         show_image(upside_down(image),'Upside-down image')
 
-        show_image(vert_edges(image),'Vertical edges')
+        show_image(vert_edges(image),'Vertical edges') #gray level
 
-        show_image(hor_edges(image),'Horizontal edges')
+        show_image(hor_edges(image),'Horizontal edges') #gray level
 
         show_image(np.sqrt(hor_edges(image)**2+vert_edges(image)**2),'Edge magnitudes')
 
