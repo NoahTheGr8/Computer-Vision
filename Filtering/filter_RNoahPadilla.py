@@ -20,21 +20,39 @@ def show_image(image,title='',save_im=False,filename=None):
 def sub_image(I,r0,c0,rows,cols):
     return I[r0:r0+rows,c0:c0+cols]
 
-#expects a 2D array so make it work for 3D
+#DIY version of 'correlate2d_scipy' that also works for 3D images
 def correlate2d(image,filt):
-    r,c = filt.shape
-    result = np.zeros((image.shape[0]-r + 1, image.shape[1]-c + 1))
     
-    r,c = filt.shape
-    result = np.zeros((image.shape[0]-r + 1, image.shape[1]-c + 1))
+    #print(">>> shape:",image.shape)
+    #print(">>> shape size:",len(image.shape))
     
-    r,c = filt.shape
-    result = np.zeros((image.shape[0]-r + 1, image.shape[1]-c + 1))
+    #for non color images
+    if len(image.shape) == 2:
+        
+        print(">>> Filtering 2D image... <<<")
+        
+        r,c = filt.shape
+        result = np.zeros((image.shape[0]-r + 1, image.shape[1]-c + 1))
     
-    #extra for loop?
-    for i in range(result.shape[0]):
-        for j in range(result.shape[1]):
-            result[i,j] = np.sum(image[i:i+r,j:j+c]*filt) # Dot product of image region and filter
+        for i in range(result.shape[0]):
+            for j in range(result.shape[1]):
+                result[i,j] = np.sum(image[i:i+r,j:j+c]*filt) # Dot product of image region and filter
+    
+    #for color images
+    if len(image.shape) == 3:
+        
+        print(">>> Filtering 3D image... <<<")
+        
+        r,c = filt.shape
+        result = np.zeros((image.shape[0]-r + 1, image.shape[1]-c + 1,3))
+        
+        #go through each channel
+        for k in range(result.shape[2]):
+            
+            #Go through the regions in each channel
+            for i in range(result.shape[0]):
+                for j in range(result.shape[1]):
+                    result[i,j,k] = np.sum(image[i:i+r,j:j+c,k]*filt) # Dot product of image region and filter
     
     return result
 
@@ -50,8 +68,43 @@ if __name__ == "__main__":
     plt.close("all")
 
     image = mpimg.imread('eiffel.jpg')
-    image = np.mean(image,axis=2)
+    
+    if np.amax(image) > 1:
+     image = (image / 255).astype(np.float32) #normalize
+     print('Converted image to float')
+     
+    '''
+    ---------------------------------------  #1  ---------------------------------------
+    '''
 
+    #below are all the filters
+    f1 = np.array([[-1,0,1],[-2,0,2],[-1,0,1]])
+    f2 = f1.T
+    f3 = np.ones((3,3))/9
+    f4 = np.zeros((3,3))
+    f4[1,1]=1
+    f5 = 2*f4-f3
+    f6 = gaussian_filter(15, 3)
+    titles=['Filter','Result','Close-up']
+    k=1
+    for f in [f1,f2,f3,f4,f5,f6]:
+        print(f)
+        print(np.sum(f))
+        #image_f = correlate2d_scipy(image,f)
+        
+        #the one we did
+        image_f = correlate2d(image,f)
+        
+        show_image(image_f)
+        show_image(sub_image(image_f,62,325,50,25))
+        k+=1
+     
+    '''
+    ---------------------------------------  #2  ---------------------------------------
+    '''
+    image = np.mean(image,axis=2)#THIS IS THE MEAN FILTER
+
+    #below are all the filters
     f1 = np.array([[-1,0,1],[-2,0,2],[-1,0,1]])
     f2 = f1.T
     f3 = np.ones((3,3))/9
@@ -65,6 +118,11 @@ if __name__ == "__main__":
         print(f)
         print(np.sum(f))
         image_f = correlate2d_scipy(image,f)
+        
         show_image(image_f)
         show_image(sub_image(image_f,62,325,50,25))
         k+=1
+        
+    '''
+    ---------------------------------------  #3  ---------------------------------------
+    '''
