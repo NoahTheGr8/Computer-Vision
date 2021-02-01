@@ -90,7 +90,6 @@ if __name__ == "__main__":
     if np.amax(image) > 1:
      image = (image / 255).astype(np.float32) #normalize
      print('Converted image to float')
-     
     
     #below are all the filters
     f1 = np.array([[-1,0,1],[-2,0,2],[-1,0,1]]) #vertical edge filter
@@ -117,7 +116,7 @@ if __name__ == "__main__":
         k+=1
         
     #---------------------------------------  #2  ---------------------------------------
-    image = np.mean(image,axis=2)#THIS IS THE MEAN FILTER
+    image = np.mean(image,axis=2)
     k=1
     for f in [f1,f2,f3,f4,f5,f6]:
         print(f)
