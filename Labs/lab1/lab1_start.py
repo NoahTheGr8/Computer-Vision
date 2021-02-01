@@ -1,3 +1,7 @@
+"""
+Author: R Noah Padilla
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -30,6 +34,7 @@ def show_images(images,titles=None,save_im=True,filename=None):
         fig.savefig(filename+'.jpg',bbox_inches='tight', pad_inches=0.1)
     return fig, ax
 
+#return a image that is 3 channels deep however you retrieve the color_index
 def color_index(image,index):
     #red
     if index==0:
@@ -91,11 +96,49 @@ def mirror(image):
 def upside_down(image):
     return image[::-1]
 
+'''
+Write a function to find the brightest region of size r  c in an image, where r and c are user-provided integer
+parameters. The brightest region of size rc in an image I is the subarray I[i : i+r; j : j +c] of I that has the
+highest sum (or, equivalently, mean) for all valid values of i and j. For every valid value of i and j, the mean
+or average intensity of the region of size r  c with top-left corner (i; j) is given by: np.mean(I[i:i+r,j:j+c]).
+    1. Find the brightest region of size r  c in the intensity image and draw a rectangle surrounding it.
+    2. Find the darkest region of size r  c in the intensity image and draw a rectangle surrounding it (notice
+    that the darkest region is the same as the brightest region in the negative image).
+    3. Find the brightest region of size r  c in the red index image and draw a rectangle surrounding it.
+    4. Find the brightest region of size r  c in the green index image and draw a rectangle surrounding it.
+    5. Find the brightest region of size r  c in the blue index image and draw a rectangle surrounding it.
+'''
 def brightest_region(image,reg_rows,reg_cols):
+    
+    """
+    #for testing
+    print("shape",image.shape)
+    print("shape 0",image.shape[0])
+    print("shape 1",image.shape[1])
+    print("bc",brightest_col)
+    print("br",brightest_row)
+    """
+    #-----------ORIGINAL ALGORITHM 
+    #we know that the brightest colors rgb(255,255,255) is white and rgb(0,0,0) is black
     brightest_col = np.random.randint(0,image.shape[0]-reg_rows)
     brightest_row = np.random.randint(0,image.shape[1]-reg_cols)
+    
+    for i in range( image.shape[0] - reg_rows ):
+        for j in range( image.shape[1] - reg_cols ):
+         if np.sum(image[i:i+reg_rows, j:j+reg_cols]) > np.sum(image[brightest_row:brightest_row+reg_rows, brightest_col:brightest_col+reg_cols]):       
+             brightest_row = i
+             brightest_col = j
+    
+    """
+    #OPTIMIZED ALGORITHM - delete one for-loop
+    for i in range( image.shape[0] - reg_rows ):
+        bright_region_row_i = np.argmax(np.sum(image[i:i+reg_rows,:,1]))
+    """
+    
+    #Didnt touch this
     x = brightest_col + np.array([0,1,1,0,0])*reg_cols - 0.5
     y = brightest_row + np.array([0,0,1,1,0])*reg_rows - 0.5
+    
     return x,y
 
 if __name__ == "__main__":
@@ -115,8 +158,6 @@ if __name__ == "__main__":
 
         show_image(image,'Original image')
         
-        print(image.shape)
-
         show_image(subsample(image,2,2),'Subsampled image')
 
         show_images(get_channels(image),['Red','Green','Blue'],filename='channels')
@@ -138,18 +179,24 @@ if __name__ == "__main__":
 
         show_image(np.sqrt(hor_edges(image)**2+vert_edges(image)**2),'Edge magnitudes')
 
+
+        #---------------------------------------------------------------------------------
         fig, ax = show_image(image,'Brightest regions',save_im=False)
 
-        reg_rows, reg_cols = 30,20
-        x,y = brightest_region(image,reg_rows, reg_cols)
-        ax.plot(x,y,color='k')
-
-        x,y = brightest_region(-image,reg_rows, reg_cols)
-        ax.plot(x,y,color='w')
+        reg_rows, reg_cols = 30,40
+        #
+        x,y = brightest_region(gray_level(image),reg_rows, reg_cols)
+        ax.plot(x,y,color='k')#k = black
+        
+        #Darkest color
+        x,y = brightest_region(-gray_level(image),reg_rows, reg_cols)
+        ax.plot(x,y,color='w')#w = white
 
         c = 'rgb'
         for i in range(3):
+            #passing each layer
             x,y = brightest_region(color_index(image,i),reg_rows, reg_cols)
             ax.plot(x,y,color=c[i])
 
         fig.savefig('brightest_regions.jpg',bbox_inches='tight', pad_inches=0.1)
+        
