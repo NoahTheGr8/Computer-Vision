@@ -166,4 +166,3 @@ if __name__ == "__main__":
     #shows filtered image in normal view and zoomed in
     show_image(image_f, "#4 Gaussian Filter")
     show_image(sub_image(image_f,62,325,50,25), "#4 Gaussian Filter")
-    
