@@ -17,15 +17,14 @@ def integral_image(image):
         integral_image = np.zeros((image.shape[0]+1,image.shape[1]+1),dtype=np.int32)
     else:
         integral_image = np.zeros((image.shape[0]+1,image.shape[1]+1),dtype=np.float32)
-    integral_image[1:,1:] = np.cumsum(np.cumsum(image,axis=1))
-    #integral_image = np.cumsum(integral_image,axis=0)
+    integral_image[1:,1:] = np.cumsum(np.cumsum(image,axis=0),axis=1)
     return integral_image
 
 def region_sums(image,reg_rows,reg_cols):
-    int_im = integral_image(image)
-    return int_im[reg_rows:,reg_cols:] - int_im[reg_rows:,:-reg_cols] - int_im[:-reg_rows,reg_cols:] + int_im[:-reg_rows,:-reg_cols]
+    S = integral_image(image)
+    return S[reg_rows:,reg_cols:] - S[reg_rows:,:-reg_cols] - S[:-reg_rows,reg_cols:] + S[:-reg_rows,:-reg_cols]
 
-def show_image(image,title='',save_im=True,filename=None):
+def show_image(image,title='',save_im=False,filename=None):
     # Display image in new window
     fig, ax = plt.subplots()
     ax.imshow(image,cmap='gray')
@@ -37,7 +36,7 @@ def show_image(image,title='',save_im=True,filename=None):
         fig.savefig(filename+'.jpg',bbox_inches='tight', pad_inches=0.1)
     return fig, ax
 
-def show_images(images,titles=None,fig_title='', save_im=True,filename=None):
+def show_images(images,titles=None,fig_title='', save_im=False,filename=None):
     if titles==None:
         titles = ['' for i in range(len(images))]
     # Display image in new window
@@ -51,7 +50,6 @@ def show_images(images,titles=None,fig_title='', save_im=True,filename=None):
         if filename==None:
             filename='show_images'
         fig.savefig(filename+'.jpg',bbox_inches='tight', pad_inches=0.1)
-
     return fig, ax
 
 def color_index(image,index):
@@ -87,13 +85,17 @@ def mirror(image):
 def upside_down(image):
     return image[::-1]
 
+def make_box(x, y, dx, dy):
+    # Returns coordinates of box given upper left corner (x,y) and sizes (dx, dy)
+    # Notice x corresponds to image columns and y to image rows
+    xs = x + np.array([0,1,1,0,0])*dx - 0.5
+    ys = y + np.array([0,0,1,1,0])*dy - 0.5
+    return xs,ys
+
 def brightest_region(image,reg_rows,reg_cols):
-    #rs = region_sums_ii(image,reg_rows,reg_cols)
     rs = region_sums(image,reg_rows,reg_cols)
     brightest = np.argmax(rs)
     brightest_col = brightest%rs.shape[1]
     brightest_row = brightest//rs.shape[1]
-    x = brightest_col + np.array([0,1,1,0,0])*reg_cols - 0.5
-    y = brightest_row + np.array([0,0,1,1,0])*reg_rows - 0.5
-    return x,y
+    return brightest_row, brightest_col, rs[brightest_row, brightest_col]
 
