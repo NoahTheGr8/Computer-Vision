@@ -2,7 +2,9 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from skimage import exposure
 import utils
+import matplotlib.image as mpimg
 
 data_dir = 'C:\\Users\\npizz\\Desktop\\Computer Vision\\Labs\\lab2\\' 
 data_files =  ['image_set_gl.npz','image_set_ag.npz','image_set_mc.npz']
@@ -51,7 +53,7 @@ for d, data_file in enumerate(data_files):
     
     print("TOP IMAGES SHAPE > ",top_images.shape)
     
-    utils.show_images(top_images[0:4], fig_title ="TOP 4 HQ IMAGES")
+    #utils.show_images(top_images[0:4], fig_title ="TOP 4 HQ IMAGES") #used for debugging
     
     #----------------------- 4 -----------------------
     """
@@ -72,7 +74,7 @@ for d, data_file in enumerate(data_files):
     #----------------------- 5 -----------------------
     #produce the best image now that the best images are all aligned
     best_image = np.mean(top_images, axis=0)
-    fig,bx = utils.show_image(best_image, title = "BEST IMAGE")
+    fig,bx = utils.show_image(best_image, title = "BEST IMAGE PRODUCED")
     best_br,best_bc,best_rs = utils.brightest_region(best_image, 15, 15) #avg_rs is the sum of the intensities in the brightest region
     #makebox(x,y,dy,dx) | x is columns and y are rows
     xs,ys = utils.make_box(best_bc,best_br,15,15)
@@ -80,7 +82,44 @@ for d, data_file in enumerate(data_files):
     
     #----------------------- 6 -----------------------
     
+    '''
+    #gamma
+    g_img,t  = [],[]
+    for g in [0.5,1,1.5]:
+        g_img.append(exposure.adjust_gamma(best_image,gamma=g))
+        t.append('gamma = '+str(g))
+
+    utils.show_images(g_img, titles=t, fig_title='Gamma adjustment')
     
+    #log
+    g_img,t  = [],[]
+    for g in [0.5,1,1.5]:
+        g_img.append(exposure.adjust_log(best_image,gain=g))
+        t.append('gain = '+str(g))
+
+    utils.show_images(g_img, titles=t,fig_title='log adjustment')
+
+    #sigmoid
+    g_img,t  = [],[]
+    for g in range(4,13,2):
+        t.append('gain = '+str(g))
+        g_img.append(exposure.adjust_sigmoid(best_image,gain=g))
     
+    utils.show_images(g_img, titles=t, fig_title='sigmoid adjustment')
     
+    #adaptive equalization
+    g_img,t  = [],[]
+    clips = [.02,.03,.05]
+    for g in clips:
+        t.append('clip limit = ' + str(g) )
+        g_img.append( exposure.equalize_adapthist(best_image, clip_limit=clips))
+    
+    utils.show_images(g_img, titles=t, fig_title='adaptive equalization')
+    '''
+    #%%%%%%%%%%%%%%%%%%%%TODO
+    #reshape best image to be of shape (703,1010,3)
+    img_adapteq = exposure.equalize_adapthist(best_image, clip_limit=0.03)
+    #ax_img = utils.plot_img(img_adapteq)
+    #ax_img.set_title('Adaptive equalization')
+    print("after")
     break
