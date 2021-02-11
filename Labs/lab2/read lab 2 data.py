@@ -27,7 +27,6 @@ for d, data_file in enumerate(data_files):
         5. Then average those top images excluding the average image
         6. Perform the 4 filters and print them
     """
-
     
     #----------------------- 1 -----------------------
     avg_img = np.mean(images,axis=0)
@@ -55,6 +54,33 @@ for d, data_file in enumerate(data_files):
     utils.show_images(top_images[0:4], fig_title ="TOP 4 HQ IMAGES")
     
     #----------------------- 4 -----------------------
+    """
+    1. get the stats of the brightest region for every image
+    2. copmute the difference to that of the average image
+    3. Update that image 
+    4. Average the aligned images
+    """
+    for i,image in enumerate(top_images):
+        #calculate the difference in x and y between the brightest region of 'image' and the average region
+        br,bc,rs = utils.brightest_region(image, 15, 15)
+        dx = avg_bc - bc
+        dy = avg_br - br
+        
+        top_images[i] = np.roll(image, dx , axis=1 )
+        top_images[i] = np.roll(image, dy , axis=0 )
+    
+    #----------------------- 5 -----------------------
+    #produce the best image now that the best images are all aligned
+    best_image = np.mean(top_images, axis=0)
+    fig,bx = utils.show_image(best_image, title = "BEST IMAGE")
+    best_br,best_bc,best_rs = utils.brightest_region(best_image, 15, 15) #avg_rs is the sum of the intensities in the brightest region
+    #makebox(x,y,dy,dx) | x is columns and y are rows
+    xs,ys = utils.make_box(best_bc,best_br,15,15)
+    bx.plot(xs,ys,color='r')
+    
+    #----------------------- 6 -----------------------
+    
+    
     
     
     break
