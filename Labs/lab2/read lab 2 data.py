@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from skimage import exposure
 import utils
 import matplotlib.image as mpimg
+from sklearn.preprocessing import normalize 
 
 data_dir = 'C:\\Users\\npizz\\Desktop\\Computer Vision\\Labs\\lab2\\' 
 data_files =  ['image_set_gl.npz','image_set_ag.npz','image_set_mc.npz']
@@ -82,7 +83,6 @@ for d, data_file in enumerate(data_files):
     
     #----------------------- 6 -----------------------
     
-    '''
     #gamma
     g_img,t  = [],[]
     for g in [0.5,1,1.5]:
@@ -109,17 +109,10 @@ for d, data_file in enumerate(data_files):
     
     #adaptive equalization
     g_img,t  = [],[]
-    clips = [.02,.03,.05]
+    clips = [.0012,.0025,.005]
     for g in clips:
         t.append('clip limit = ' + str(g) )
-        g_img.append( exposure.equalize_adapthist(best_image, clip_limit=clips))
+        g_img.append( exposure.equalize_adapthist(normalize(best_image), clip_limit=g))
     
-    utils.show_images(g_img, titles=t, fig_title='adaptive equalization')
-    '''
-    #%%%%%%%%%%%%%%%%%%%%TODO
-    #reshape best image to be of shape (703,1010,3)
-    img_adapteq = exposure.equalize_adapthist(best_image, clip_limit=0.03)
-    #ax_img = utils.plot_img(img_adapteq)
-    #ax_img.set_title('Adaptive equalization')
-    print("after")
-    break
+    utils.show_images(g_img, titles=t, fig_title='adaptive equalization')  
+    
