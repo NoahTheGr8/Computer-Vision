@@ -8,7 +8,7 @@ from skimage import transform as tf
 
 plt.close('all')
 
-img = mpimg.imread('mona_lisa_hr.jpg')
+img = mpimg.imread('mona_lisa.jpg')
 img = img/np.amax(img)
 
 
