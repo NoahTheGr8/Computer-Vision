@@ -39,8 +39,9 @@ if __name__ == "__main__":
     # An ORB feature consists of a keypoint (the coordinates of the region's center) and a descriptor (a binary vector of length 256 that characterizes the region)
     plt.close('all')
 
-    img1 = mpimg.imread('utepccsA.jpg')
-    img2 = mpimg.imread('utepccsB.jpg')
+    img1 = mpimg.imread('.//images//utepccsA.jpg')
+    #img2 = mpimg.imread('.//images//utepccsB.jpg') #160 matches
+    img2 = mpimg.imread('.//images//arc1.jpg')
     
     orb = cv2.ORB_create()
     
@@ -52,16 +53,16 @@ if __name__ == "__main__":
     
     keypoints2, descriptors2 = orb.detectAndCompute(img2,mask=None)
     ax[1].imshow(cv2.drawKeypoints(img2, keypoints2, None, color=(0,255,0), flags=0))
-
+    
      #256 bits describe a region
     #hamming dist between 2 binary vectors 
     #dir(var) -> shows all attributes for var
-    print(dir(keypoints1[0])) #shows all attrib of the var
-    print(keypoints1[0].pt) #
+    #print(dir(keypoints1[0])) #shows all attrib of the keypoint at index0
+    #print(keypoints1[0].pt) #shows the coordinate are keypoint0
     
     #------------------ 2. Use the Brute Force matcher to find the descriptor matches.
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-    matches = matcher.match(descriptors1,descriptors2)#list containing
+    matches = matcher.match(descriptors1,descriptors2)
     
     # Extract data from orb objects and matcher
     dist = np.array([m.distance for m in matches])
@@ -74,19 +75,22 @@ if __name__ == "__main__":
     
     #------------------ 3. Display the first 20 descriptor matches and determine, visually, how many of them are correct
     
-    sel = 10
-    display_control_lines(img1,img2, keypoints1[:sel], keypoints2[:sel])
-
+    sel = 20
+    
+    #display_control_lines(img1,img2, keypoints1[:sel], keypoints2[:sel])#connects keypoints from both images and prints those connections BUT not accurate at all
+    
     #------------------ 4. Repeat the previous question, but now sort the matches by distance prior to displaying
     ds = np.argsort(dist)
-    display_control_lines(img1,img2, keypoints1[ds[:sel]], keypoints2[ds[:sel]])
-
+    #display_control_lines(img1,img2, keypoints1[ds[:sel]], keypoints2[ds[:sel]]) #kind of accurate but could be better BASED var 'dist'
+    
     #------------------ 5. Compute a homography from the matches from questions 3. Display the condition number and determinant of the homography.
-    
+   
     #To check if the points correspond to eachother multiply the points1 by H and see if there correspond
-    pts0, pts1 = select_matches_ransac(keypoints1[:],keypoints2[:])
+    pts0, pts1 = select_matches_ransac(keypoints1[:sel],keypoints2[:sel])
     
-    display_control_lines(img1,img2,pts0 , pts1)
+    display_control_lines(img1,img2,pts0, pts1)
+    
+    
     
 
 
